@@ -5,6 +5,7 @@ from requests import Request, post
 from rest_framework import status
 from rest_framework.response import Response
 from api.models import Room
+from spotify.models import Vote
 from spotify.utils import update_or_create_user_tokens, is_spotify_authenticated, execute_spotify_api_request, pause_song, play_song, skip_song
 
 # Create your views here.
@@ -85,18 +86,18 @@ class CurrentSong(APIView):
             name = artist.get('name')
             artist_string += name
 
-        song = {
-            'title': item.get('name'),
-            'artist': artist_string,
-            'duration': duration,
-            'time': progress,
-            'image_url': album_cover,
-            'is_playing': is_playing,
-            'votes': 0,
-            'id': song_id
+        song = {Vote
         }
 
         return Response(song, status=status.HTTP_200_OK)
+
+    def update_room_song(self, room, song_id):
+        current_song = room.current_song
+
+        if current_song != song_id:
+            room.current_song = song_id
+            room.save(update_fields=['current_song'])
+            votes = Vote.objects.filter(room=room).delete()
 
 class PauseSong(APIView):
     def put(self, response, format=None):
