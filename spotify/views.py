@@ -5,7 +5,7 @@ from requests import Request, post
 from rest_framework import status
 from rest_framework.response import Response
 from api.models import Room
-from spotify.utils import update_or_create_user_tokens, is_spotify_authenticated, execute_spotify_api_request, pause_song, play_song
+from spotify.utils import update_or_create_user_tokens, is_spotify_authenticated, execute_spotify_api_request, pause_song, play_song, skip_song
 
 # Create your views here.
 class AuthURL(APIView):
@@ -117,3 +117,17 @@ class PlaySong(APIView):
             return Response({}, status=status.HTTP_204_NO_CONTENT)
         
         return Response({}, status=status.HTTP_403_FORBIDDEN)
+
+
+class SkipSong(APIView):
+    def post(self, request, format=None):
+        room_code = self.request.session.get('room_code')
+        room = Room.objects.filter(code=room_code)[0]
+
+
+        if self.request.session.session_key == room.host:
+            skip_song(room.host)
+        else:
+            pass
+
+        return Response({}, status.HTTP_204_NO_CONTENT)
